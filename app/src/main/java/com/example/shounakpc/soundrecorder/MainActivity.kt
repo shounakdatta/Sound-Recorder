@@ -9,11 +9,11 @@ import android.support.v4.view.ViewPager
 import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
-import com.astuetz.PagerSlidingTabStrip
+//import com.astuetz.PagerSlidingTabStrip
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var tabs: PagerSlidingTabStrip
+//    private lateinit var tabs: PagerSlidingTabStrip
     private lateinit var viewPager: ViewPager
     private lateinit var toolbar: Toolbar
 
@@ -22,15 +22,15 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         viewPager = findViewById(R.id.pager)
-        tabs = findViewById(R.id.tabStrip)
+//        tabs = findViewById(R.id.tabStrip)
         toolbar = findViewById(R.id.toolbar)
 
         viewPager.adapter = MyPagerAdapter(supportFragmentManager)
-        tabs.setViewPager(viewPager)
+//        tabs.setViewPager(viewPager)
 
-        if (toolbar != null) {
+//        if (toolbar != null) {
             setSupportActionBar(toolbar)
-        }
+//        }
 
     }
 

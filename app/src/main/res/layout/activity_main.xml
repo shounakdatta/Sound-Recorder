@@ -13,16 +13,16 @@
             android:id="@+id/toolbar">
         </include>
 
-        <com.astuetz.PagerSlidingTabStrip
-            android:id="@+id/tabStrip"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorPrimary"
-            app:pstsIndicatorColor="@color/tabStrip"
-            app:pstsIndicatorHeight="5dp"
-            app:pstsShouldExpand="true"
-        >
-        </com.astuetz.PagerSlidingTabStrip>
+        <!--<com.astuetz.PagerSlidingTabStrip-->
+            <!--android:id="@+id/tabStrip"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="?attr/actionBarSize"-->
+            <!--android:background="@color/colorPrimary"-->
+            <!--app:pstsIndicatorColor="@color/tabStrip"-->
+            <!--app:pstsIndicatorHeight="5dp"-->
+            <!--app:pstsShouldExpand="true"-->
+        <!--&gt;-->
+        <!--</com.astuetz.PagerSlidingTabStrip>-->
 
         <android.support.v4.view.ViewPager
             android:id="@+id/pager"
