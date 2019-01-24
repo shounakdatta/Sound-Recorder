@@ -25,21 +25,15 @@ class RecordFragment: Fragment() {
     private lateinit var stopButton: Button
     private lateinit var recordingPrompt: TextView
     private lateinit var chronometer: Chronometer
-    private lateinit var progressBar: ProgressBar
+    private lateinit var view1: View
     var recordPromptCount = 0
-    var startRecording = true
-    var pauseRecording = true
 
 //  Time when user clicks pause button
     var timeWhenPaused = 0
 
     companion object {
-        fun newInstance(position: Int): RecordFragment {
-            var recordFragment = RecordFragment()
-            var newBundle = Bundle()
-            newBundle.putInt("position", position)
-            recordFragment.arguments = newBundle
-            return recordFragment
+        fun newInstance(): RecordFragment {
+            return RecordFragment()
         }
     }
 
@@ -48,86 +42,105 @@ class RecordFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        val position = this.arguments?.get("position") ?: 0
+
+        if (position == 0) {
+            view1 = inflater.inflate(R.layout.record_fragment_layout, container, false)
+        }
+        else {
+            view1 = inflater.inflate(R.layout.record_fragment_layout, container, false)
+        }
         val view = inflater.inflate(R.layout.record_fragment_layout, container, false)
         chronometer = view.findViewById(R.id.chronometer)
         recordingPrompt = view.findViewById(R.id.recording_status)
         recordButton = view.findViewById(R.id.recordButton)
-        progressBar = view.findViewById(R.id.recordProgressBar)
-//        recordButton.rippleColor = resources.getColor(R.color.colorPrimaryDark)
+        pauseButton = view.findViewById(R.id.pauseButton)
+        stopButton = view.findViewById(R.id.stopButton)
 
+        recordButton.isEnabled = true
+        pauseButton.isEnabled = false
+        stopButton.isEnabled = false
 
-        Log.d("myTag", "Test1")
         recordButton.setOnClickListener {
-            onRecord(startRecording)
-            startRecording = !startRecording
+            onRecord()
+            recordButton.isEnabled = false
+            pauseButton.isEnabled = true
+            stopButton.isEnabled = true
         }
 
-        pauseButton = view.findViewById(R.id.pauseButton)
         pauseButton.setOnClickListener {
-            onPauseRecord(pauseRecording)
-            pauseRecording = !pauseRecording
+            onPauseRecord()
+            recordButton.isEnabled = true
+            pauseButton.isEnabled = false
+            stopButton.isEnabled = true
+        }
+
+        stopButton.setOnClickListener {
+            onStopRecord()
+            recordButton.isEnabled = true
+            pauseButton.isEnabled = false
+            stopButton.isEnabled = false
         }
 
         return view
     }
 
-    private fun onRecord(startRecording: Boolean) {
+    private fun onRecord() {
 //        val recordIntent = Intent(activity, RecordingService.class)
+        val filePath = Environment.getExternalStorageDirectory().toString() + "/SoundRecorder"
+        val folder = File(filePath)
 
-        if (startRecording) {
-            val filePath = Environment.getExternalStorageDirectory().toString() + "/SoundRecorder"
-            val folder = File(filePath)
+        if (!folder.exists()) {
+            folder.mkdir()
+        }
 
-            if (!folder.exists()) {
-                folder.mkdir()
+        Log.d("filePath", filePath)
+        Log.d("pauseTime", timeWhenPaused.toString())
+
+        if (timeWhenPaused == 0) {
+            Log.d("pauseTime", "reset")
+            chronometer.base = SystemClock.elapsedRealtime()
+        }
+        else {
+            Log.d("pauseTime", "using last")
+            chronometer.base = timeWhenPaused.toLong() + SystemClock.elapsedRealtime()
+        }
+        chronometer.start()
+        chronometer.setOnChronometerTickListener {
+            if (recordPromptCount == 0) {
+                recordingPrompt.text = "Recording."
+            }
+            else if (recordPromptCount == 1) {
+                recordingPrompt.text = "Recording.."
+            }
+            else if (recordPromptCount == 2) {
+                recordingPrompt.text = "Recording..."
+                recordPromptCount = 0
             }
 
-            Log.d("filePath", filePath)
-
-            if (timeWhenPaused == 0) {
-                chronometer.base = SystemClock.elapsedRealtime()
-            }
-            else {
-                chronometer.base = timeWhenPaused.toLong()
-            }
-            chronometer.start()
-            chronometer.setOnChronometerTickListener {
-                if (recordPromptCount == 0) {
-                    recordingPrompt.text = "Recording."
-                }
-                else if (recordPromptCount == 1) {
-                    recordingPrompt.text = "Recording.."
-                }
-                else if (recordPromptCount == 2) {
-                    recordingPrompt.text = "Recording..."
-                    recordPromptCount = 0
-                }
-
-                recordPromptCount++
-            }
+            recordPromptCount++
+        }
 
 //        activity.startService(recordIntent)
 //            activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-            recordingPrompt.text = "Recording."
-            recordPromptCount++
-        }
-        else {
-//            activity.stopService(recordIntent)
-//            activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        }
+        recordingPrompt.text = "Recording..."
+        recordPromptCount++
 
     }
 
-    private fun onPauseRecord(pauseRecording: Boolean) {
+    private fun onPauseRecord() {
+        timeWhenPaused = (chronometer.base - SystemClock.elapsedRealtime()).toInt()
+        chronometer.stop()
+        Log.d("pauseTime", timeWhenPaused.toString())
+        recordingPrompt.text = "Paused. Tap Mic to Continue or Stop to End"
+    }
 
-
-        if (pauseRecording) {
-            chronometer.stop()
-            timeWhenPaused = SystemClock.elapsedRealtime().toInt()
-            Log.d("pauseTime", timeWhenPaused.toString())
-            recordingPrompt.text = "Paused. Tap Button to Continue"
-        }
+    private fun onStopRecord() {
+        timeWhenPaused = 0
+        chronometer.stop()
+        chronometer.base = SystemClock.elapsedRealtime()
+        recordingPrompt.text = "Tap Mic to Start Recording"
     }
 
 }

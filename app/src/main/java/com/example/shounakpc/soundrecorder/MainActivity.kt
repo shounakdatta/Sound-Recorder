@@ -28,9 +28,9 @@ class MainActivity : AppCompatActivity() {
         viewPager.adapter = MyPagerAdapter(supportFragmentManager)
 //        tabs.setViewPager(viewPager)
 
-//        if (toolbar != null) {
+        if (toolbar != null) {
             setSupportActionBar(toolbar)
-//        }
+        }
 
     }
 
@@ -54,9 +54,8 @@ class MainActivity : AppCompatActivity() {
 
         override fun getItem(position: Int): Fragment {
             when(position) {
-                0 -> return RecordFragment.newInstance(position)
-//                else -> return FileViewerFragment.newInstance(position)
-                else -> return RecordFragment.newInstance(0)
+                0 -> return RecordFragment.newInstance()
+                else -> return RecordFragment.newInstance()
             }
         }
 
