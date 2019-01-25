@@ -1,6 +1,7 @@
 package com.example.shounakpc.soundrecorder
 
 import android.content.Intent
+import android.media.MediaRecorder
 import android.os.Bundle
 import android.os.Environment
 import android.os.SystemClock
@@ -25,11 +26,14 @@ class RecordFragment: Fragment() {
     private lateinit var stopButton: Button
     private lateinit var recordingPrompt: TextView
     private lateinit var chronometer: Chronometer
-    private lateinit var view1: View
-    var recordPromptCount = 0
+    private lateinit var audioRecorder: MediaRecorder
+    private lateinit var filepath: String
+    private var recordPromptCount = 0
 
 //  Time when user clicks pause button
-    var timeWhenPaused = 0
+    var timeWhenPaused = 0;
+
+    var outputFile = "";
 
     companion object {
         fun newInstance(): RecordFragment {
@@ -42,26 +46,42 @@ class RecordFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val position = this.arguments?.get("position") ?: 0
-
-        if (position == 0) {
-            view1 = inflater.inflate(R.layout.record_fragment_layout, container, false)
-        }
-        else {
-            view1 = inflater.inflate(R.layout.record_fragment_layout, container, false)
-        }
         val view = inflater.inflate(R.layout.record_fragment_layout, container, false)
-        chronometer = view.findViewById(R.id.chronometer)
-        recordingPrompt = view.findViewById(R.id.recording_status)
-        recordButton = view.findViewById(R.id.recordButton)
-        pauseButton = view.findViewById(R.id.pauseButton)
-        stopButton = view.findViewById(R.id.stopButton)
+        chronometer = view.findViewById(R.id.chronometer);
+        recordingPrompt = view.findViewById(R.id.recording_status);
+        recordButton = view.findViewById(R.id.recordButton);
+        pauseButton = view.findViewById(R.id.pauseButton);
+        stopButton = view.findViewById(R.id.stopButton);
+        filepath = Environment.getExternalStorageDirectory().absolutePath + "/SoundRecorder";
+        val folder = File(filepath);
+
+        if (!folder.exists()) {
+            folder.mkdir()
+        }
+
+        var fileList = folder.listFiles();
+        var filenum = fileList.size;
 
         recordButton.isEnabled = true
         pauseButton.isEnabled = false
         stopButton.isEnabled = false
 
         recordButton.setOnClickListener {
+            if (outputFile == "") {
+                outputFile = "$filepath/recording$filenum.3gp";
+            }
+            if (timeWhenPaused == 0) {
+                audioRecorder = MediaRecorder();
+                audioRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                audioRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+                audioRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+                audioRecorder.setOutputFile(outputFile);
+                audioRecorder.prepare();
+                audioRecorder.start();
+            }
+            else {
+                audioRecorder.resume();
+            }
             onRecord()
             recordButton.isEnabled = false
             pauseButton.isEnabled = true
@@ -69,6 +89,7 @@ class RecordFragment: Fragment() {
         }
 
         pauseButton.setOnClickListener {
+            audioRecorder.pause();
             onPauseRecord()
             recordButton.isEnabled = true
             pauseButton.isEnabled = false
@@ -76,7 +97,9 @@ class RecordFragment: Fragment() {
         }
 
         stopButton.setOnClickListener {
-            onStopRecord()
+            audioRecorder.stop();
+            audioRecorder.release();
+            onStopRecord();
             recordButton.isEnabled = true
             pauseButton.isEnabled = false
             stopButton.isEnabled = false
@@ -87,22 +110,13 @@ class RecordFragment: Fragment() {
 
     private fun onRecord() {
 //        val recordIntent = Intent(activity, RecordingService.class)
-        val filePath = Environment.getExternalStorageDirectory().toString() + "/SoundRecorder"
-        val folder = File(filePath)
 
-        if (!folder.exists()) {
-            folder.mkdir()
-        }
-
-        Log.d("filePath", filePath)
         Log.d("pauseTime", timeWhenPaused.toString())
 
         if (timeWhenPaused == 0) {
-            Log.d("pauseTime", "reset")
             chronometer.base = SystemClock.elapsedRealtime()
         }
         else {
-            Log.d("pauseTime", "using last")
             chronometer.base = timeWhenPaused.toLong() + SystemClock.elapsedRealtime()
         }
         chronometer.start()

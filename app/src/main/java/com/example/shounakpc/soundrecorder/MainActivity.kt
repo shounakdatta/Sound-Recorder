@@ -1,5 +1,7 @@
 package com.example.shounakpc.soundrecorder
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -7,13 +9,12 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.view.ViewPager
 import android.support.v7.widget.Toolbar
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-//import com.astuetz.PagerSlidingTabStrip
 
 class MainActivity : AppCompatActivity() {
 
-//    private lateinit var tabs: PagerSlidingTabStrip
     private lateinit var viewPager: ViewPager
     private lateinit var toolbar: Toolbar
 
@@ -21,12 +22,22 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        viewPager = findViewById(R.id.pager)
-//        tabs = findViewById(R.id.tabStrip)
-        toolbar = findViewById(R.id.toolbar)
+        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED ||
+            checkSelfPermission(Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.RECORD_AUDIO
+                ), 1
+            );
+        }
 
+        viewPager = findViewById(R.id.pager)
+        toolbar = findViewById(R.id.toolbar)
         viewPager.adapter = MyPagerAdapter(supportFragmentManager)
-//        tabs.setViewPager(viewPager)
 
         if (toolbar != null) {
             setSupportActionBar(toolbar)
@@ -55,7 +66,7 @@ class MainActivity : AppCompatActivity() {
         override fun getItem(position: Int): Fragment {
             when(position) {
                 0 -> return RecordFragment.newInstance()
-                else -> return RecordFragment.newInstance()
+                else -> return RecordingList.newInstance()
             }
         }
 
