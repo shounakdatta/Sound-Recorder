@@ -55,22 +55,17 @@ class RecordFragment: Fragment() {
         filepath = Environment.getExternalStorageDirectory().absolutePath + "/SoundRecorder";
         val folder = File(filepath);
 
-        if (!folder.exists()) {
-            folder.mkdir()
-        }
-
-        var fileList = folder.listFiles();
-        var filenum = fileList.size;
-
         recordButton.isEnabled = true
         pauseButton.isEnabled = false
         stopButton.isEnabled = false
 
         recordButton.setOnClickListener {
-            if (outputFile == "") {
-                outputFile = "$filepath/recording$filenum.3gp";
-            }
+            var fileList = folder.listFiles();
+            var filenum = fileList.size;
+
+            Log.d("numFiles", filenum.toString());
             if (timeWhenPaused == 0) {
+                outputFile = "$filepath/recording${filenum+1}.3gp";
                 audioRecorder = MediaRecorder();
                 audioRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
                 audioRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -82,6 +77,7 @@ class RecordFragment: Fragment() {
             else {
                 audioRecorder.resume();
             }
+            Log.d("numFiles", outputFile);
             onRecord()
             recordButton.isEnabled = false
             pauseButton.isEnabled = true
